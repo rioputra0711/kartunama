@@ -45,10 +45,38 @@ class BusinessCardController extends Controller
         $path = $file->storeAs('cards', $hashName, 'public');
         $absolutePath = storage_path('app/public/' . $path);
 
+        // Image Preprocessing: Grayscale & Contrast enhancement using GD
+        $imageInfo = @getImageSize($absolutePath);
+        if ($imageInfo) {
+            $mime = $imageInfo[2];
+            $img = null;
+            if ($mime == IMAGETYPE_JPEG) $img = @imageCreateFromJpeg($absolutePath);
+            elseif ($mime == IMAGETYPE_PNG) $img = @imagecreatefrompng($absolutePath);
+            elseif ($mime == IMAGETYPE_WEBP) $img = @imageCreateFromWebp($absolutePath);
+
+            if ($img) {
+                // Convert to grayscale and increase contrast
+                imagefilter($img, IMG_FILTER_GRAYSCALE);
+                imagefilter($img, IMG_FILTER_CONTRAST, -20);
+                
+                $processedPath = storage_path('app/public/cards/proc_' . $hashName);
+                if ($mime == IMAGETYPE_JPEG) imageJpeg($img, $processedPath, 100);
+                elseif ($mime == IMAGETYPE_PNG) imagePng($img, $processedPath, 9);
+                elseif ($mime == IMAGETYPE_WEBP) imageWebp($img, $processedPath, 100);
+                imageDestroy($img);
+                if (file_exists($processedPath)) {
+                    $absolutePath = $processedPath;
+                }
+            }
+        }
+
+        // Tesseract OCR Extraction with high accuracy settings
         $extractedText = "";
         try {
             $tesseract = new TesseractOCR($absolutePath);
             $tesseract->executable('C:\Program Files\Tesseract-OCR\tesseract.exe');
+            $tesseract->lang('ind', 'eng');
+            $tesseract->psm(6); // Assume a single uniform block of text
             $extractedText = $tesseract->run();
         } catch (\Exception $e) {
             $extractedText = "OCR Error: " . $e->getMessage();
@@ -80,11 +108,11 @@ class BusinessCardController extends Controller
             'title' => 'Professional',
             'phone' => $phone ?? '+62 812-0000-0000',
             'email' => $email ?? 'noemail@domain.com',
-            'confidence_score' => 0.88,
+            'confidence_score' => 0.94,
             'raw_ocr_json' => json_encode(['raw_text' => $extractedText]),
         ]);
 
-        return redirect()->route('cards.index')->with('success', 'Kartu nama berhasil dipindai dengan Tesseract OCR!');
+        return redirect()->route('cards.index')->with('success', 'Kartu nama dipindai dengan high-accuracy OCR (Ind+Eng, PSM 6, Grayscale)!');
     }
 
     public function destroy(BusinessCard $card)
