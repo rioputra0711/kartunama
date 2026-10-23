@@ -46,13 +46,13 @@ class BusinessCardController extends Controller
         $absolutePath = storage_path('app/public/' . $path);
 
         // Image Preprocessing: Grayscale & Contrast enhancement using GD
-        $imageInfo = @getImageSize($absolutePath);
+        $imageInfo = @getimagesize($absolutePath);
         if ($imageInfo) {
             $mime = $imageInfo[2];
             $img = null;
-            if ($mime == IMAGETYPE_JPEG) $img = @imageCreateFromJpeg($absolutePath);
-            elseif ($mime == IMAGETYPE_PNG) $img = @imagecreatefrompng($absolutePath);
-            elseif ($mime == IMAGETYPE_WEBP) $img = @imageCreateFromWebp($absolutePath);
+            if ($mime == IMAGETYPE_JPEG) $img = @\imagecreatefromjpeg($absolutePath);
+            elseif ($mime == IMAGETYPE_PNG) $img = @\imagecreatefrompng($absolutePath);
+            elseif ($mime == IMAGETYPE_WEBP) $img = @\imagecreatefromwebp($absolutePath);
 
             if ($img) {
                 // Convert to grayscale and increase contrast
@@ -60,10 +60,10 @@ class BusinessCardController extends Controller
                 imagefilter($img, IMG_FILTER_CONTRAST, -20);
                 
                 $processedPath = storage_path('app/public/cards/proc_' . $hashName);
-                if ($mime == IMAGETYPE_JPEG) imageJpeg($img, $processedPath, 100);
-                elseif ($mime == IMAGETYPE_PNG) imagePng($img, $processedPath, 9);
-                elseif ($mime == IMAGETYPE_WEBP) imageWebp($img, $processedPath, 100);
-                imageDestroy($img);
+                if ($mime == IMAGETYPE_JPEG) imagejpeg($img, $processedPath, 100);
+                elseif ($mime == IMAGETYPE_PNG) imagepng($img, $processedPath, 9);
+                elseif ($mime == IMAGETYPE_WEBP) imagewebp($img, $processedPath, 100);
+                imagedestroy($img);
                 if (file_exists($processedPath)) {
                     $absolutePath = $processedPath;
                 }
