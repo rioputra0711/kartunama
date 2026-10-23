@@ -2,6 +2,9 @@
 
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('vault.index');
-});
+use App\Http\Controllers\BusinessCardController;
+
+Route::get('/', [BusinessCardController::class, 'index'])->name('cards.index');
+Route::post('/cards', [BusinessCardController::class, 'store'])->name('cards.store');
+Route::delete('/cards/{card}', [BusinessCardController::class, 'destroy'])->name('cards.destroy');
+
