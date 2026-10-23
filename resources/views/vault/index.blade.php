@@ -19,9 +19,6 @@
                 </button>
             @endif
             <span class="flex items-center gap-1 border border-gray-200 rounded px-1.5 py-0.5 text-[10px] text-gray-400 font-mono ml-2"><kbd>⌘</kbd> K</span>
-            
-            {{-- Autocomplete Dropdown --}}
-            <div id="search-suggestions" class="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded shadow-lg hidden max-h-64 overflow-y-auto z-50"></div>
         </div>
         <div class="flex items-center gap-4 text-sm font-medium text-gray-600">
             <div class="flex items-center gap-1">
@@ -416,6 +413,61 @@
     function clearSearch() {
         window.location.href = "{{ route('cards.index') }}";
     }
+
+    // Live search with AJAX - filter cards without reload
+    let searchTimeout;
+    const searchInput = document.getElementById('search-input');
+    const cardsGrid = document.querySelector('.grid.grid-cols-1.md\\:grid-cols-2.lg\\:grid-cols-3');
+    const paginationContainer = document.querySelector('div.flex.items-center.justify-between.border-t.border-gray-200.pt-6');
+    const paginationText = document.querySelector('p.text-sm.text-gray-500.mt-8');
+    
+    searchInput.addEventListener('input', function(e) {
+        const query = e.target.value.trim();
+        
+        clearTimeout(searchTimeout);
+        
+        if (query.length === 0) {
+            window.location.href = "{{ route('cards.index') }}";
+            return;
+        }
+        
+        searchTimeout = setTimeout(function() {
+            performLiveSearch(query);
+        }, 300);
+    });
+    
+    function performLiveSearch(query) {
+        fetch("{{ route('cards.index') }}?q=" + encodeURIComponent(query) + "&page=1")
+            .then(response => response.text())
+            .then(html => {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                
+                // Extract cards and pagination
+                const newCards = doc.querySelector('.grid.grid-cols-1.md\\:grid-cols-2.lg\\:grid-cols-3');
+                const newPagination = doc.querySelector('div.flex.items-center.justify-between.border-t.border-gray-200.pt-6');
+                
+                if (newCards) {
+                    cardsGrid.innerHTML = newCards.innerHTML;
+                }
+                if (newPagination) {
+                    paginationContainer.innerHTML = newPagination.innerHTML;
+                }
+                
+                // Update pagination text
+                if (doc.querySelector('p.text-sm.text-gray-500.mt-8')) {
+                    paginationText.innerHTML = doc.querySelector('p.text-sm.text-gray-500.mt-8').innerHTML;
+                }
+            })
+            .catch(err => console.error('Search error:', err));
+    }
+    
+    // Hide suggestions when clicking outside
+    document.addEventListener('click', function(e) {
+        if (e.target !== searchInput) {
+            // No suggestions dropdown needed for live filter
+        }
+    });
 
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
