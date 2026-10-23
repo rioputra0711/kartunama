@@ -24,7 +24,7 @@
             </p>
 
             {{-- Dropzone Form --}}
-            <form action="#" method="POST" enctype="multipart/form-data" class="space-y-5" id="scan-form">
+            <form action="{{ route('cards.store') }}" method="POST" enctype="multipart/form-data" class="space-y-5" id="scan-form">
                 @csrf
                 <div class="dropzone border-2 border-dashed border-ink-600 rounded-lg p-8 text-center transition-all cursor-pointer bg-ink-950/40 hover:border-brass/60 relative group"
                      id="dropzone">
