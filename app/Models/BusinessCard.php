@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class BusinessCard extends Model
 {
-    /** @use HasFactory<\Database\Factories\BusinessCardFactory> */
     use HasFactory;
+
+    protected $guarded = [];
 }
