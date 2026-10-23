@@ -16,8 +16,13 @@ class BusinessCardController extends Controller
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%$search%")
                   ->orWhere('company', 'like', "%$search%")
+                  ->orWhere('title', 'like', "%$search%")
+                  ->orWhere('phone', 'like', "%$search%")
+                  ->orWhere('office_phone', 'like', "%$search%")
                   ->orWhere('email', 'like', "%$search%")
-                  ->orWhere('phone', 'like', "%$search%");
+                  ->orWhere('website', 'like', "%$search%")
+                  ->orWhere('address', 'like', "%$search%")
+                  ->orWhere('linkedin', 'like', "%$search%");
             });
         }
         $cards = $query->latest()->paginate(6)->withQueryString();
@@ -34,8 +39,13 @@ class BusinessCardController extends Controller
         $query->where(function ($q) use ($request) {
             $q->where('name', 'like', "%{$request->q}%")
               ->orWhere('company', 'like', "%{$request->q}%")
+              ->orWhere('title', 'like', "%{$request->q}%")
+              ->orWhere('phone', 'like', "%{$request->q}%")
+              ->orWhere('office_phone', 'like', "%{$request->q}%")
               ->orWhere('email', 'like', "%{$request->q}%")
-              ->orWhere('phone', 'like', "%{$request->q}%");
+              ->orWhere('website', 'like', "%{$request->q}%")
+              ->orWhere('address', 'like', "%{$request->q}%")
+              ->orWhere('linkedin', 'like', "%{$request->q}%");
         });
 
         $cards = $query->latest()->paginate(6)->withQueryString();

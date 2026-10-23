@@ -10,10 +10,18 @@
         <div class="flex items-center gap-2 font-medium text-lg tracking-tight">
             kartu nama <span class="text-xs font-bold text-gray-500 tracking-widest mt-1">VAULT <span class="text-emerald-700">■</span></span>
         </div>
-        <div class="hidden md:flex items-center w-full max-w-md bg-gray-50 border border-gray-200 rounded-md px-3 py-2 text-sm text-gray-400">
-            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-            <input type="text" placeholder="Search contacts by name or company" class="bg-transparent w-full outline-none text-gray-700 placeholder-gray-400">
-            <span class="flex items-center gap-1 border border-gray-200 rounded px-1.5 py-0.5 text-[10px] text-gray-400 font-mono"><kbd>⌘</kbd> K</span>
+        <div class="hidden md:flex items-center w-full max-w-md bg-gray-50 border border-gray-200 rounded-md px-3 py-2 text-sm text-gray-400 group focus-within:bg-white focus-within:ring-1 focus-within:ring-emerald-500 focus-within:border-emerald-500 transition-all relative">
+            <svg class="w-4 h-4 mr-2 text-gray-400 group-focus-within:text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+            <input type="text" id="search-input" value="{{ request('q') }}" placeholder="Search contacts by name or company" class="bg-transparent w-full outline-none text-gray-700 placeholder-gray-400" autocomplete="off">
+            @if(request()->has('q'))
+                <button type="button" onclick="clearSearch()" class="text-gray-400 hover:text-gray-600 ml-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            @endif
+            <span class="flex items-center gap-1 border border-gray-200 rounded px-1.5 py-0.5 text-[10px] text-gray-400 font-mono ml-2"><kbd>⌘</kbd> K</span>
+            
+            {{-- Autocomplete Dropdown --}}
+            <div id="search-suggestions" class="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded shadow-lg hidden max-h-64 overflow-y-auto z-50"></div>
         </div>
         <div class="flex items-center gap-4 text-sm font-medium text-gray-600">
             <div class="flex items-center gap-1">
@@ -403,6 +411,10 @@
     function closeCardModal() {
         const modal = document.getElementById('card-modal');
         modal.style.display = 'none';
+    }
+
+    function clearSearch() {
+        window.location.href = "{{ route('cards.index') }}";
     }
 
     document.addEventListener('keydown', function(e) {
