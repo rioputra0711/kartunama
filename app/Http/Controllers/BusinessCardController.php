@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\BusinessCard;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use thiagoalessio\TesseractOCR\TesseractOCR;
+use Gemini;
 
 class BusinessCardController extends Controller
 {
@@ -13,15 +13,51 @@ class BusinessCardController extends Controller
     {
         $query = BusinessCard::query();
         if ($search = $request->input('q')) {
-            $query->where('name', 'like', "%$search%")
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%$search%")
                   ->orWhere('company', 'like', "%$search%")
-                  ->orWhere('email', 'like', "%$search%");
+                  ->orWhere('email', 'like', "%$search%")
+                  ->orWhere('phone', 'like', "%$search%");
+            });
         }
-        $cards = $query->latest()->paginate(12);
+        $cards = $query->latest()->paginate(6)->withQueryString();
         return view('vault.index', compact('cards'));
     }
 
-    public function store(Request $request)
+    public function search(Request $request)
+    {
+        $request->validate([
+            'q' => 'required|string|min:1',
+        ]);
+
+        $query = BusinessCard::query();
+        $query->where(function ($q) use ($request) {
+            $q->where('name', 'like', "%{$request->q}%")
+              ->orWhere('company', 'like', "%{$request->q}%")
+              ->orWhere('email', 'like', "%{$request->q}%")
+              ->orWhere('phone', 'like', "%{$request->q}%");
+        });
+
+        $cards = $query->latest()->paginate(6)->withQueryString();
+        return response()->json([
+            'success' => true,
+            'html' => view('vault._search_results', compact('cards'))->render(),
+        ]);
+    }
+
+    public function allContacts(Request $request)
+    {
+        $cards = BusinessCard::latest()->paginate(12)->withQueryString();
+        return view('vault.index', compact('cards'));
+    }
+
+    public function recentlyAdded(Request $request)
+    {
+        $cards = BusinessCard::latest()->take(10)->get();
+        return view('vault.index', compact('cards'));
+    }
+
+    public function preview(Request $request)
     {
         $request->validate([
             'card_image' => 'required|file|mimes:jpg,jpeg,png,webp|max:8192',
@@ -45,74 +81,101 @@ class BusinessCardController extends Controller
         $path = $file->storeAs('cards', $hashName, 'public');
         $absolutePath = storage_path('app/public/' . $path);
 
-        // Image Preprocessing: Grayscale & Contrast enhancement using GD
-        $imageInfo = @getimagesize($absolutePath);
-        if ($imageInfo) {
-            $mime = $imageInfo[2];
-            $img = null;
-            if ($mime == IMAGETYPE_JPEG) $img = @\imagecreatefromjpeg($absolutePath);
-            elseif ($mime == IMAGETYPE_PNG) $img = @\imagecreatefrompng($absolutePath);
-            elseif ($mime == IMAGETYPE_WEBP) $img = @\imagecreatefromwebp($absolutePath);
-
-            if ($img) {
-                // Convert to grayscale and increase contrast
-                imagefilter($img, IMG_FILTER_GRAYSCALE);
-                imagefilter($img, IMG_FILTER_CONTRAST, -20);
-                
-                $processedPath = storage_path('app/public/cards/proc_' . $hashName);
-                if ($mime == IMAGETYPE_JPEG) imagejpeg($img, $processedPath, 100);
-                elseif ($mime == IMAGETYPE_PNG) imagepng($img, $processedPath, 9);
-                elseif ($mime == IMAGETYPE_WEBP) imagewebp($img, $processedPath, 100);
-                imagedestroy($img);
-                if (file_exists($processedPath)) {
-                    $absolutePath = $processedPath;
-                }
-            }
-        }
-
-        // Tesseract OCR Extraction with high accuracy settings
         $extractedText = "";
+        $data = [];
         try {
-            $tesseract = new TesseractOCR($absolutePath);
-            $tesseract->executable('C:\Program Files\Tesseract-OCR\tesseract.exe');
-            $tesseract->lang('ind', 'eng');
-            $tesseract->psm(6); // Assume a single uniform block of text
-            $extractedText = $tesseract->run();
+            $apiKey = env('GEMINI_API_KEY');
+            $client = Gemini::client($apiKey);
+            
+            $imageData = base64_encode(file_get_contents($absolutePath));
+            
+            $rawMime = $file->getClientMimeType();
+            $mimeEnum = match($rawMime) {
+                'image/png' => \Gemini\Enums\MimeType::IMAGE_PNG,
+                'image/jpeg', 'image/jpg' => \Gemini\Enums\MimeType::IMAGE_JPEG,
+                'image/webp' => \Gemini\Enums\MimeType::IMAGE_WEBP,
+                'image/heic' => \Gemini\Enums\MimeType::IMAGE_HEIC,
+                'image/heif' => \Gemini\Enums\MimeType::IMAGE_HEIF,
+                default => \Gemini\Enums\MimeType::IMAGE_JPEG,
+            };
+
+            $prompt = 'Analyze this business card image and extract information into a strict JSON format. ONLY output the JSON object, without any markdown formatting or code blocks. Use exactly these keys: "name", "company", "title", "phone", "office_phone", "email", "website", "address", "linkedin". If a field is not found, set its value to an empty string.';
+
+            $response = $client->generativeModel('gemini-3.1-flash-lite')->generateContent([
+                $prompt,
+                new \Gemini\Data\Blob(
+                    mimeType: $mimeEnum,
+                    data: $imageData
+                )
+            ]);
+            
+            $extractedText = $response->text();
         } catch (\Exception $e) {
-            $extractedText = "OCR Error: " . $e->getMessage();
+            $extractedText = '{"error": "Gemini Error: ' . $e->getMessage() . '"}';
         }
 
-        $name = 'Unknown Name';
-        $email = null;
-        $phone = null;
-        $company = 'Unknown Company';
+        $cleanedJson = trim(preg_replace('/^```(?:json)?\s*|\s*```$/i', '', $extractedText));
+        $data = json_decode($cleanedJson, true) ?? [];
 
-        if (preg_match('/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i', $extractedText, $matches)) {
-            $email = $matches[0];
-        }
-        if (preg_match('/(\+62|62|0)[0-9\-\s]{9,15}/', $extractedText, $matches)) {
-            $phone = trim($matches[0]);
-        }
+        $query = BusinessCard::query();
+        $cards = $query->latest()->paginate(6)->withQueryString();
 
-        $lines = array_filter(explode("\n", $extractedText));
-        if (count($lines) > 0) {
-            $name = trim(reset($lines));
-            if (strlen($name) > 50) $name = 'Extracted Contact';
-        }
+        return view('vault.index', [
+            'cards' => $cards,
+            'previewData' => [
+                'original_filename' => $file->getClientOriginalName(),
+                'file_path' => $path,
+                'filesize' => round(filesize($absolutePath) / 1024 / 1024, 2) . ' MB',
+                'name' => $data['name'] ?? '',
+                'company' => $data['company'] ?? '',
+                'title' => $data['title'] ?? '',
+                'phone' => $data['phone'] ?? '',
+                'office_phone' => $data['office_phone'] ?? '',
+                'email' => $data['email'] ?? '',
+                'website' => $data['website'] ?? '',
+                'address' => $data['address'] ?? '',
+                'linkedin' => $data['linkedin'] ?? '',
+                'confidence_score' => 0.98,
+                'raw_ocr_json' => json_encode(['raw_text' => $extractedText, 'parsed' => $data]),
+            ]
+        ]);
+    }
 
-        $card = BusinessCard::create([
-            'original_filename' => $file->getClientOriginalName(),
-            'file_path' => $path,
-            'name' => $name,
-            'company' => $company,
-            'title' => 'Professional',
-            'phone' => $phone ?? '+62 812-0000-0000',
-            'email' => $email ?? 'noemail@domain.com',
-            'confidence_score' => 0.94,
-            'raw_ocr_json' => json_encode(['raw_text' => $extractedText]),
+    public function store(Request $request)
+    {
+        // Validasi diubah agar menerima entri manual (tanpa gambar)
+        $request->validate([
+            'file_path' => 'nullable|string',
+            'original_filename' => 'nullable|string',
+            'name' => 'required|string|max:255',
+            'company' => 'required|string|max:255',
+            'title' => 'nullable|string|max:255',
+            'phone' => 'nullable|string|max:255',
+            'office_phone' => 'nullable|string|max:255',
+            'email' => 'nullable|string|max:255',
+            'website' => 'nullable|string|max:255',
+            'address' => 'nullable|string|max:500',
+            'linkedin' => 'nullable|string|max:255',
+            'raw_ocr_json' => 'nullable|string',
         ]);
 
-        return redirect()->route('cards.index')->with('success', 'Kartu nama dipindai dengan high-accuracy OCR (Ind+Eng, PSM 6, Grayscale)!');
+        BusinessCard::create([
+            'original_filename' => $request->input('original_filename'),
+            'file_path' => $request->input('file_path'),
+            'name' => $request->input('name'),
+            'company' => $request->input('company'),
+            'title' => $request->input('title'),
+            'phone' => $request->input('phone'),
+            'office_phone' => $request->input('office_phone'),
+            'email' => $request->input('email'),
+            'website' => $request->input('website'),
+            'address' => $request->input('address'),
+            'linkedin' => $request->input('linkedin'),
+            'confidence_score' => $request->input('file_path') ? 0.98 : 1.0, // 100% jika manual
+            'raw_ocr_json' => $request->input('raw_ocr_json', '{}'),
+        ]);
+
+        return redirect()->route('cards.index')->with('success', 'Kontak berhasil disimpan ke Vault!');
     }
 
     public function destroy(BusinessCard $card)
@@ -123,4 +186,5 @@ class BusinessCardController extends Controller
         $card->delete();
         return redirect()->route('cards.index')->with('success', 'Kartu nama berhasil dihapus.');
     }
+
 }

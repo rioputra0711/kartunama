@@ -1,146 +1,413 @@
 @extends('layouts.vault')
 
-@section('title', 'Katalog Kontak & Pemindai')
+@section('title', 'Vault — Every connection. In one place.')
 
 @section('content')
-<div class="space-y-10">
-    {{-- Hero Section / Scanner Hub --}}
-    <section class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        {{-- Left: Upload & Intake Panel (5 cols) --}}
-        <div class="lg:col-span-5 vault-card p-6 sm:p-8 rounded-xl shadow-2xl relative overflow-hidden">
-            <div class="absolute -right-16 -top-16 w-48 h-48 bg-brass/5 rounded-full blur-2xl pointer-events-none"></div>
-            
-            <div class="flex items-center justify-between mb-6">
-                <h2 class="font-display text-xl font-bold tracking-tight text-paper flex items-center gap-2">
-                    <span>Scan Kartu Nama</span>
-                </h2>
-                <span class="tag bg-brass/10 border border-brass/30 text-brass-soft px-2 py-0.5 rounded">
-                    AI Vision / OCR
-                </span>
+<div class="min-h-screen bg-[#fafaf9] text-gray-900 font-sans">
+    
+    {{-- Navbar Section --}}
+    <nav class="flex items-center justify-between px-8 py-4 border-b border-gray-200 bg-white">
+        <div class="flex items-center gap-2 font-medium text-lg tracking-tight">
+            kartu nama <span class="text-xs font-bold text-gray-500 tracking-widest mt-1">VAULT <span class="text-emerald-700">■</span></span>
+        </div>
+        <div class="hidden md:flex items-center w-full max-w-md bg-gray-50 border border-gray-200 rounded-md px-3 py-2 text-sm text-gray-400">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+            <input type="text" placeholder="Search contacts by name or company" class="bg-transparent w-full outline-none text-gray-700 placeholder-gray-400">
+            <span class="flex items-center gap-1 border border-gray-200 rounded px-1.5 py-0.5 text-[10px] text-gray-400 font-mono"><kbd>⌘</kbd> K</span>
+        </div>
+        <div class="flex items-center gap-4 text-sm font-medium text-gray-600">
+            <div class="flex items-center gap-1">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                Personal vault
             </div>
+            <div class="w-8 h-8 bg-emerald-50 rounded-full border border-emerald-200 flex items-center justify-center text-emerald-700">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+            </div>
+        </div>
+    </nav>
 
-            <p class="text-sm text-ink-300 mb-6 font-sans">
-                Unggah foto kartu nama fisik untuk ekstraksi otomatis. Sistem mendeteksi teks, nama perusahaan, kontak, serta alamat secara presisi.
-            </p>
+    {{-- Header & Stats --}}
+    <header class="max-w-7xl mx-auto px-8 pt-12 pb-10 flex flex-col md:flex-row justify-between items-end">
+        <div>
+            <p class="text-[11px] font-bold tracking-widest text-emerald-700 uppercase mb-3">YOUR NETWORK, ORGANIZED.</p>
+            <h1 class="text-5xl font-normal tracking-tight text-gray-900 mb-4">Every connection. In one place.</h1>
+            <p class="text-gray-500">Scan a business card. Verify the details. Keep the connection.</p>
+        </div>
+        <div class="flex items-center gap-12 mt-8 md:mt-0">
+            <div>
+                <p class="text-4xl font-light text-gray-900">{{ $cards->total() ?? 0 }}</p>
+                <p class="text-xs text-gray-500 mt-1">Saved contacts</p>
+            </div>
+            <div class="border-l border-gray-200 pl-12">
+                <p class="text-4xl font-light text-emerald-700">@isset($previewData) 01 @else 00 @endisset</p>
+                <p class="text-xs text-gray-500 mt-1">Ready to review</p>
+            </div>
+        </div>
+    </header>
 
-            {{-- Dropzone Form --}}
-            <form action="{{ route('cards.store') }}" method="POST" enctype="multipart/form-data" class="space-y-5" id="scan-form">
-                @csrf
-                <div class="dropzone border-2 border-dashed border-ink-600 rounded-lg p-8 text-center transition-all cursor-pointer bg-ink-950/40 hover:border-brass/60 relative group"
-                     id="dropzone">
-                    <input type="file" name="card_image" id="card_image" class="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10" accept="image/jpeg,image/png,image/webp">
-                    
-                    <div class="flex flex-col items-center justify-center space-y-3 pointer-events-none">
-                        <div class="w-12 h-12 rounded-full bg-ink-900 border border-ink-700 flex items-center justify-center text-brass group-hover:scale-110 transition-transform">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                        </div>
-                        <div>
-                            <p class="text-sm font-medium text-paper" id="dropzone-text">Seret foto kartu di sini, atau <span class="text-brass underline underline-offset-4">pilih berkas</span></p>
-                            <p class="tag text-ink-400 mt-1" id="dropzone-subtext">JPG, PNG, WebP • Maksimal 8 MB</p>
-                        </div>
-                    </div>
+    {{-- Main Container --}}
+    <main class="max-w-7xl mx-auto px-8 pb-20 space-y-12">
+        
+        {{-- Default Upload Zone (Hides when previewing or manual mode) --}}
+        @if(!isset($previewData))
+        <div id="default-upload-zone" class="bg-[#12221b] text-white rounded-lg p-10 flex flex-col md:flex-row items-center justify-between shadow-lg relative overflow-hidden">
+            <div class="flex items-center gap-6 relative z-10">
+                <div class="w-16 h-16 border border-white/20 rounded border-dashed flex items-center justify-center shrink-0">
+                    <svg class="w-6 h-6 text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path></svg>
                 </div>
-
-                {{-- Action Options --}}
-                <div class="flex items-center justify-between pt-2">
-                    <div class="flex items-center gap-2 font-mono text-xs text-ink-400">
-                        <span class="inline-block w-2 h-2 rounded-full bg-verdigris"></span>
-                        <span>Clipboard (Ctrl+V) Aktif</span>
-                    </div>
-                    <button type="submit" class="bg-brass hover:bg-brass-soft text-ink-950 font-semibold px-5 py-2.5 rounded-sm text-sm transition-all shadow-lg shadow-brass/10 cursor-pointer flex items-center gap-2">
-                        <span>Proses Ekstraksi</span>
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+                <div>
+                    <h2 class="text-2xl font-medium mb-1">Drop cards. Make connections. <span class="text-[9px] font-mono tracking-widest text-white/50 ml-2 uppercase">Batch Upload</span></h2>
+                    <p class="text-sm text-white/70 mb-2">Drag & drop business cards here, or choose how to add them.</p>
+                    <p class="text-[10px] font-mono text-white/40 tracking-wider">JPG, PNG, WEBP / MAX 8 MB PER FILE</p>
+                </div>
+            </div>
+            
+            <form action="{{ route('cards.preview') }}" method="POST" enctype="multipart/form-data" id="upload-form" class="flex flex-wrap items-center gap-3 relative z-10 mt-6 md:mt-0">
+                @csrf
+                <button type="button" class="px-4 py-2.5 bg-transparent border border-white/20 hover:bg-white/10 rounded flex items-center gap-2 text-sm transition-colors cursor-not-allowed">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path></svg>
+                    Camera
+                </button>
+                <div class="relative group">
+                    <input type="file" name="card_image" accept="image/jpeg,image/png,image/webp" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onchange="submitUploadForm(this)">
+                    <button type="button" class="px-5 py-2.5 bg-[#007b55] hover:bg-[#006644] text-white rounded flex items-center gap-2 text-sm transition-colors cursor-pointer pointer-events-none">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                        Upload files
                     </button>
                 </div>
+                <button type="button" onclick="enableManualInput()" class="px-4 py-2.5 bg-transparent border border-white/20 hover:bg-white/10 rounded flex items-center gap-2 text-sm transition-colors">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                    Manual Input
+                </button>
             </form>
+            <p class="absolute bottom-4 right-10 text-[10px] text-white/40">Have a card copied? Paste with Ctrl + V</p>
+            
+            {{-- Loading overlay --}}
+            <div id="loading-overlay" class="absolute inset-0 bg-[#12221b] flex items-center justify-center hidden z-50">
+                <div class="flex items-center gap-3 text-white">
+                    <svg class="animate-spin h-5 w-5 text-[#007b55]" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                    <span class="text-sm">Processing with Gemini AI...</span>
+                </div>
+            </div>
         </div>
+        @endif
 
-        {{-- Right: Quick Stats & Vault Health (7 cols) --}}
-        <div class="lg:col-span-7 space-y-6">
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div class="vault-card p-5 rounded-xl">
-                    <span class="tag text-ink-400">Total Kontak</span>
-                    <div class="mt-2 flex items-baseline gap-2">
-                        <span class="font-display text-3xl font-bold text-paper">0</span>
-                        <span class="font-mono text-xs text-verdigris">+0 hari ini</span>
+        {{-- Split-View Verification / Manual Form Panel --}}
+        <div id="verification-panel" class="bg-white border border-gray-200 rounded-lg shadow-sm {{ isset($previewData) ? 'block' : 'hidden' }}">
+            <div class="px-8 py-5 border-b border-gray-200 flex flex-wrap items-center justify-between gap-4 bg-gray-50/50 rounded-t-lg">
+                <div class="flex items-center gap-2">
+                    <span class="text-emerald-700 font-medium text-sm">01 / Verify contact details</span>
+                    <span class="text-gray-400 text-sm">Ready for your review</span>
+                </div>
+                <div id="match-badge" class="flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-100 rounded text-xs font-semibold">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    98% Match
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12">
+                {{-- Left Side: Image Preview (Hidden on Manual Mode) --}}
+                <div id="image-side" class="lg:col-span-4 p-8 border-b lg:border-b-0 lg:border-r border-gray-200 bg-gray-50 flex flex-col">
+                    <div class="flex items-center justify-between text-[10px] font-mono text-gray-500 uppercase tracking-widest mb-6">
+                        <span>Original Card</span>
+                        <span>400 PX ↗</span>
+                    </div>
+                    
+                    <div class="flex-1 flex flex-col justify-center mb-6">
+                        <img id="card-preview-img" src="{{ isset($previewData) ? asset('storage/' . $previewData['file_path']) : '' }}" alt="Card" class="w-full shadow-md border border-gray-200">
+                    </div>
+                    
+                    <div class="mt-auto">
+                        <div class="flex items-center justify-between p-3 bg-white border border-gray-200 rounded text-sm mb-6">
+                            <div class="flex items-center gap-3 overflow-hidden">
+                                <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                                <div class="truncate">
+                                    <p id="card-filename" class="font-medium text-gray-900 truncate">{{ $previewData['original_filename'] ?? 'manual_entry' }}</p>
+                                    <p id="card-filesize" class="text-xs text-gray-500">{{ $previewData['filesize'] ?? '0 MB' }} • Uploaded just now</p>
+                                </div>
+                            </div>
+                            <svg class="w-4 h-4 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                        </div>
+                        
+                        <div class="flex items-center justify-between text-sm">
+                            <button type="button" class="flex items-center gap-2 text-gray-600 hover:text-gray-900 cursor-not-allowed">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                                Download original
+                            </button>
+                            <button type="button" onclick="cancelManualInput()" class="flex items-center gap-2 text-gray-600 hover:text-red-600">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                Delete image
+                            </button>
+                        </div>
+                        <p class="text-xs text-gray-400 mt-4">Your original image stays with this contact unless you choose to delete it.</p>
                     </div>
                 </div>
-                <div class="vault-card p-5 rounded-xl">
-                    <span class="tag text-ink-400">Perusahaan</span>
-                    <div class="mt-2 flex items-baseline gap-2">
-                        <span class="font-display text-3xl font-bold text-paper">0</span>
-                        <span class="font-mono text-xs text-ink-400">entitas</span>
+
+                {{-- Right Side: Editable Form --}}
+                <div class="lg:col-span-8 p-8 flex flex-col">
+                    <div class="flex items-center gap-2 text-sm text-gray-500 mb-6">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path></svg>
+                        Extracted from your card. Click any field to make a correction.
+                    </div>
+
+                    <form action="{{ route('cards.store') }}" method="POST" id="verify-form" class="flex-1 flex flex-col">
+                        @csrf
+                        <input type="hidden" name="file_path" id="input-file_path" value="{{ $previewData['file_path'] ?? '' }}">
+                        <input type="hidden" name="original_filename" id="input-original_filename" value="{{ $previewData['original_filename'] ?? '' }}">
+                        <input type="hidden" name="raw_ocr_json" id="input-raw_json" value="{{ $previewData['raw_ocr_json'] ?? '' }}">
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5">
+                            <div>
+                                <label class="block text-xs text-gray-600 mb-1.5">Name</label>
+                                <input type="text" name="name" value="{{ $previewData['name'] ?? '' }}" class="w-full px-3 py-2 bg-white border border-gray-300 rounded text-gray-900 text-sm focus:outline-none focus:border-emerald-600" required>
+                            </div>
+                            <div>
+                                <label class="block text-xs text-gray-600 mb-1.5">Company</label>
+                                <input type="text" name="company" value="{{ $previewData['company'] ?? '' }}" class="w-full px-3 py-2 bg-white border border-gray-300 rounded text-gray-900 text-sm focus:outline-none focus:border-emerald-600" required>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-xs text-gray-600 mb-1.5">Title</label>
+                                <input type="text" name="title" value="{{ $previewData['title'] ?? '' }}" class="w-full px-3 py-2 bg-white border border-gray-300 rounded text-gray-900 text-sm focus:outline-none focus:border-emerald-600">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-gray-600 mb-1.5">Phone</label>
+                                <input type="text" name="phone" value="{{ $previewData['phone'] ?? '' }}" class="w-full px-3 py-2 bg-white border border-gray-300 rounded text-gray-900 text-sm focus:outline-none focus:border-emerald-600">
+                            </div>
+
+                            <div>
+                                <label class="block text-xs text-gray-600 mb-1.5">Email</label>
+                                <input type="email" name="email" value="{{ $previewData['email'] ?? '' }}" class="w-full px-3 py-2 bg-white border border-gray-300 rounded text-gray-900 text-sm focus:outline-none focus:border-emerald-600">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-gray-600 mb-1.5">Office Phone · optional</label>
+                                <input type="text" name="office_phone" value="{{ $previewData['office_phone'] ?? '' }}" placeholder="Not detected" class="w-full px-3 py-2 bg-white border border-gray-300 rounded text-gray-900 text-sm focus:outline-none focus:border-emerald-600 placeholder-gray-400">
+                            </div>
+
+                            <div>
+                                <label class="block text-xs text-gray-600 mb-1.5">Website</label>
+                                <input type="text" name="website" value="{{ $previewData['website'] ?? '' }}" class="w-full px-3 py-2 bg-white border border-gray-300 rounded text-gray-900 text-sm focus:outline-none focus:border-emerald-600">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-gray-600 mb-1.5">LinkedIn · optional</label>
+                                <input type="text" name="linkedin" value="{{ $previewData['linkedin'] ?? '' }}" placeholder="Not detected" class="w-full px-3 py-2 bg-white border border-gray-300 rounded text-gray-900 text-sm focus:outline-none focus:border-emerald-600 placeholder-gray-400">
+                            </div>
+
+                            <div class="sm:col-span-2">
+                                <label class="block text-xs text-gray-600 mb-1.5">Address</label>
+                                <input type="text" name="address" value="{{ $previewData['address'] ?? '' }}" placeholder="Not detected" class="w-full px-3 py-2 bg-white border border-gray-300 rounded text-gray-900 text-sm focus:outline-none focus:border-emerald-600 placeholder-gray-400">
+                            </div>
+                        </div>
+
+                        <div class="mt-auto pt-8 flex items-center justify-between">
+                            <div class="text-[10px] text-gray-400 uppercase tracking-widest font-mono">
+                                Not on the card? We leave it empty.<br>
+                                DEMO CONTACT · CONCEPTUAL DATA
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <a href="{{ route('cards.index') }}" class="px-5 py-2.5 bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 rounded text-sm font-medium transition-colors">
+                                    Discard
+                                </a>
+                                <button type="submit" class="px-5 py-2.5 bg-[#007b55] hover:bg-[#006644] text-white rounded flex items-center gap-2 text-sm font-medium transition-colors">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                    Save Contact
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        {{-- Contact Database Section --}}
+        <div class="pt-8">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                <div class="flex items-center gap-3">
+                    <h2 class="text-3xl font-normal text-gray-900">Your connections</h2>
+                    <span class="px-2 py-0.5 bg-gray-100 border border-gray-200 rounded text-xs text-gray-600">{{ $cards->total() }}</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <p class="text-sm text-gray-500 mr-auto sm:hidden">A little less searching. A lot more connecting.</p>
+                    <button class="px-3 py-2 bg-white border border-gray-200 rounded flex items-center gap-2 text-sm text-gray-700 hover:bg-gray-50">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        All contacts
+                    </button>
+                    <button class="px-3 py-2 bg-white border border-gray-200 rounded flex items-center gap-2 text-sm text-gray-700 hover:bg-gray-50">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12"></path></svg>
+                        Recently added
+                    </button>
+                    <div class="flex bg-white border border-gray-200 rounded overflow-hidden">
+                        <button class="p-2 bg-gray-900 text-white"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg></button>
+                        <button class="p-2 text-gray-400 hover:text-gray-700"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg></button>
                     </div>
                 </div>
-                <div class="vault-card p-5 rounded-xl">
-                    <span class="tag text-ink-400">Rata-rata Akurasi</span>
-                    <div class="mt-2 flex items-baseline gap-2">
-                        <span class="font-display text-3xl font-bold text-brass-soft">99.4%</span>
-                        <span class="font-mono text-xs text-ink-400">Vision</span>
+            </div>
+            <p class="text-sm text-gray-500 hidden sm:block mb-8">A little less searching. A lot more connecting.</p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                @forelse($cards as $index => $card)
+                    <div class="bg-white border border-gray-200 rounded-lg overflow-hidden flex flex-col group cursor-pointer hover:border-emerald-600 transition-all shadow-sm hover:shadow-md" onclick="openCardModal({{ json_encode($card) }})">
+                        {{-- Card Header Styling (Simulated variation based on index) --}}
+                        <div class="h-40 p-6 flex flex-col justify-end text-white relative {{ ['bg-[#12221b]', 'bg-[#1b2533]', 'bg-[#f0ece1] text-gray-900', 'bg-[#000000]', 'bg-[#e3dcd1] text-gray-900', 'bg-[#f4f7f6] text-gray-900'][$index % 6] }}">
+                            @if($card->file_path)
+                                <img src="{{ asset('storage/' . $card->file_path) }}" class="absolute inset-0 w-full h-full object-cover opacity-30 mix-blend-overlay">
+                            @endif
+                            <div class="relative z-10">
+                                <h3 class="font-medium text-lg leading-tight">{{ $card->company }}</h3>
+                                <p class="text-xs opacity-70 mt-1">{{ $card->email }}</p>
+                            </div>
+                        </div>
+                        
+                        {{-- Card Body --}}
+                        <div class="p-5 flex-1 flex flex-col bg-white">
+                            <div class="flex items-start justify-between mb-1">
+                                <h4 class="text-lg font-medium text-gray-900">{{ $card->name }}</h4>
+                                <span class="px-2 py-0.5 bg-gray-100 text-gray-500 text-[10px] rounded uppercase tracking-wider">Saved</span>
+                            </div>
+                            <p class="text-sm text-gray-500">{{ $card->title ?? 'Professional' }}</p>
+                            <p class="text-sm text-gray-500 mt-0.5">{{ $card->company }}</p>
+                            
+                            <div class="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between text-sm" onclick="event.stopPropagation()">
+                                <button class="flex items-center gap-2 text-[#007b55] hover:text-[#00553b] font-medium transition-colors" onclick="navigator.clipboard.writeText('{{ $card->email }}'); alert('Email dicopy!')">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                                    Copy Email
+                                </button>
+                                <span class="text-gray-400 text-xs truncate max-w-[120px]">{{ $card->website ?? strtolower(str_replace(' ', '', $card->company)) . '.example' }}</span>
+                                <form action="{{ route('cards.destroy', $card->id) }}" method="POST" onsubmit="return confirm('Delete connection?')" onclick="event.stopPropagation()">
+                                    @csrf @method('DELETE')
+                                    <button type="submit" class="flex items-center gap-1.5 text-gray-500 hover:text-gray-900">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                                        Edit
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                @empty
+                    <div class="col-span-full py-12 text-center border-2 border-dashed border-gray-200 rounded-lg text-gray-500">
+                        No contacts found. Upload a business card to get started.
+                    </div>
+                @endforelse
+            </div>
+
+            @if($cards->hasPages())
+                <div class="mt-8 flex items-center justify-between border-t border-gray-200 pt-6">
+                    <p class="text-sm text-gray-500">Showing {{ $cards->firstItem() ?? 0 }}–{{ $cards->lastItem() ?? 0 }} of {{ $cards->total() }} contacts</p>
+                    <div class="flex items-center gap-2">
+                        @if($cards->onFirstPage())
+                            <button class="px-4 py-2 border border-gray-200 rounded text-gray-300 cursor-not-allowed">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                            </button>
+                        @else
+                            <a href="{{ $cards->previousPageUrl() }}" class="px-4 py-2 border border-gray-200 rounded text-gray-700 hover:bg-gray-50">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                            </a>
+                        @endif
+
+                        @if($cards->hasMorePages())
+                            <a href="{{ $cards->nextPageUrl() }}" class="px-4 py-2 border border-gray-200 rounded text-gray-700 hover:bg-gray-50">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                            </a>
+                        @else
+                            <button class="px-4 py-2 border border-gray-200 rounded text-gray-300 cursor-not-allowed">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                            </button>
+                        @endif
                     </div>
                 </div>
-            </div>
-
-            {{-- Notice Banner --}}
-            <div class="vault-card p-6 rounded-xl bg-gradient-to-r from-ink-900 to-ink-850 border-l-4 border-l-brass">
-                <h3 class="font-display text-lg font-semibold text-paper mb-1">Panduan Pengarsipan Cepat</h3>
-                <p class="text-sm text-ink-300 font-sans leading-relaxed">
-                    Setiap kartu yang dipindai akan diverifikasi otomatis oleh mesin sebelum disimpan ke database MySQL. Anda dapat menyunting bidang kontak kapan saja setelah proses ekstraksi selesai.
-                </p>
-            </div>
+            @endif
         </div>
-    </section>
+    </main>
 
-    {{-- Contact Gallery / Archive Section --}}
-    <section class="space-y-6">
-        {{-- Search & Filtering Header --}}
-        <div class="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center justify-between rule-top pt-8">
-            <div class="relative flex-1 max-w-xl">
-                <svg class="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-ink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                <input type="text" placeholder="Cari kontak berdasarkan nama, jabatan, atau perusahaan..." class="field-input pl-11 rounded-lg">
-            </div>
-
-            <div class="flex items-center gap-3">
-                <select class="field-input rounded-lg cursor-pointer text-xs font-mono">
-                    <option>Urutkan: Terbaru</option>
-                    <option>Nama (A-Z)</option>
-                    <option>Perusahaan</option>
-                    <option>Confidence Score Tertinggi</option>
-                </select>
-            </div>
+    <footer class="border-t border-gray-200 bg-white py-6">
+        <div class="max-w-7xl mx-auto px-8 flex items-center justify-between text-[10px] text-gray-500 font-mono tracking-widest uppercase">
+            <span>KARTU NAMA VAULT / YOUR PERSONAL CONTACT DATABASE</span>
+            <span class="flex items-center gap-2">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                Private by default. Yours to keep.
+            </span>
         </div>
-
-        {{-- Contact Cards Grid / Empty State --}}
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {{-- Empty State Presentation --}}
-            <div class="vault-card p-12 rounded-xl text-center col-span-full py-20 flex flex-col items-center justify-center">
-                <div class="w-14 h-14 rounded-full bg-ink-900 border border-ink-700 flex items-center justify-center text-ink-400 mb-4">
-                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
-                </div>
-                <h4 class="font-display text-lg font-semibold text-paper mb-1">Belum ada kartu tersimpan</h4>
-                <p class="text-sm text-ink-400 max-w-md mx-auto font-sans">
-                    Arsip kontak masih kosong. Unggah foto kartu nama pertama Anda melalui panel di atas untuk mengisi database Vault.
-                </p>
-            </div>
-        </div>
-    </section>
+    </footer>
 </div>
 
 @push('scripts')
 <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const fileInput = document.getElementById('card_image');
-        const dropzoneText = document.getElementById('dropzone-text');
-        const dropzoneSubtext = document.getElementById('dropzone-subtext');
+    function submitUploadForm(input) {
+        if (input.files && input.files[0]) {
+            document.getElementById('loading-overlay').classList.remove('hidden');
+            document.getElementById('upload-form').submit();
+        }
+    }
 
-        if (fileInput) {
-            fileInput.addEventListener('change', (e) => {
-                if (e.target.files && e.target.files[0]) {
-                    const fileName = e.target.files[0].name;
-                    dropzoneText.innerHTML = `<span class="text-verdigris font-semibold">Berkas terpilih:</span> ${fileName}`;
-                    dropzoneSubtext.textContent = 'Klik "Proses Ekstraksi" untuk mulai menyimpan';
-                }
-            });
+    function enableManualInput() {
+        document.getElementById('default-upload-zone').classList.add('hidden');
+        document.getElementById('verification-panel').classList.remove('hidden');
+        document.getElementById('image-side').classList.add('hidden');
+        document.getElementById('match-badge').innerHTML = 'Manual Entry';
+        
+        // Reset inputs
+        const form = document.getElementById('verify-form');
+        form.reset();
+        document.getElementById('input-file_path').value = '';
+        document.getElementById('input-original_filename').value = '';
+        document.getElementById('input-raw_json').value = '';
+    }
+
+    function cancelManualInput() {
+        if(!document.getElementById('input-file_path').value) {
+            document.getElementById('default-upload-zone').classList.remove('hidden');
+            document.getElementById('verification-panel').classList.add('hidden');
+            document.getElementById('image-side').classList.remove('hidden');
+        } else {
+            window.location.href = "{{ route('cards.index') }}";
+        }
+    }
+
+    function openCardModal(card) {
+        console.log('openCardModal called with:', card);
+        const modal = document.getElementById('card-modal');
+        console.log('card-modal element:', modal);
+        if (!modal) { console.error('card-modal not found in DOM'); return; }
+        const modalCompany = document.getElementById('modal-company');
+        console.log('modal-company element:', modalCompany);
+        if (!modalCompany) { console.error('modal-company not found in DOM'); return; }
+        modalCompany.innerText = card.company || 'N/A';
+        const modalName = document.getElementById('modal-name');
+        if (!modalName) { console.error('modal-name not found in DOM'); return; }
+        modalName.innerText = card.name || 'N/A';
+        document.getElementById('modal-title').innerText = card.title || 'N/A';
+        document.getElementById('modal-email').innerText = card.email || 'N/A';
+        document.getElementById('modal-phone').innerText = card.phone || 'N/A';
+        document.getElementById('modal-office-phone').innerText = card.office_phone || '-';
+        document.getElementById('modal-website').innerText = card.website || '-';
+        document.getElementById('modal-address').innerText = card.address || '-';
+        document.getElementById('modal-linkedin').innerText = card.linkedin || '-';
+        
+        let dateStr = card.created_at ? new Date(card.created_at).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' }) : '-';
+        document.getElementById('modal-date').innerText = 'Saved on: ' + dateStr;
+
+        const imgEl = document.getElementById('modal-card-image');
+        const noImgEl = document.getElementById('modal-no-image');
+        if (card.file_path) {
+            imgEl.src = "{{ asset('storage') }}/" + card.file_path;
+            imgEl.classList.remove('hidden');
+            noImgEl.classList.add('hidden');
+        } else {
+            imgEl.classList.add('hidden');
+            noImgEl.classList.remove('hidden');
+        }
+
+        modal.style.display = 'flex';
+    }
+
+    function closeCardModal() {
+        const modal = document.getElementById('card-modal');
+        modal.style.display = 'none';
+    }
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeCardModal();
         }
     });
 </script>
