@@ -12,6 +12,23 @@ class BusinessCardController extends Controller
     public function index(Request $request)
     {
         $query = BusinessCard::query();
+        
+        if ($filter = $request->input('filter')) {
+            if ($filter === 'work') {
+                $query->whereNotNull('company')->where('company', '!=', '');
+            } elseif ($filter === 'personal') {
+                $query->where(function($q) {
+                    $q->whereNull('company')->orWhere('company', '=', '');
+                });
+            }
+        }
+
+        if ($sort = $request->input('sort')) {
+            if ($sort === 'recent') {
+                $query->latest();
+            }
+        }
+
         if ($search = $request->input('q')) {
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%$search%")
@@ -158,7 +175,7 @@ class BusinessCardController extends Controller
             'file_path' => 'nullable|string',
             'original_filename' => 'nullable|string',
             'name' => 'required|string|max:255',
-            'company' => 'required|string|max:255',
+            'company' => 'nullable|string|max:255',
             'title' => 'nullable|string|max:255',
             'phone' => 'nullable|string|max:255',
             'office_phone' => 'nullable|string|max:255',
