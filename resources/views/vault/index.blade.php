@@ -161,7 +161,7 @@
                             </div>
                             <div>
                                 <label class="block text-xs text-gray-600 mb-1.5">Company</label>
-                                <input type="text" name="company" value="{{ $previewData['company'] ?? '' }}" class="w-full px-3 py-2 bg-white border border-gray-300 rounded text-gray-900 text-sm focus:outline-none focus:border-emerald-600" required>
+                                <input type="text" name="company" value="{{ $previewData['company'] ?? '' }}" placeholder="Not specified" class="w-full px-3 py-2 bg-white border border-gray-300 rounded text-gray-900 text-sm focus:outline-none focus:border-emerald-600 placeholder-gray-400">
                             </div>
                             
                             <div>
@@ -235,20 +235,39 @@
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                             </button>
                         @endif
-                        <span class="flex items-center gap-1 border border-gray-200 rounded px-1.5 py-0.5 text-[10px] text-gray-400 font-mono ml-2"><kbd>⌘</kbd> K</span>
                     </div>
                 </div>
                 {{-- END SEARCH BAR --}}
 
-                <div class="flex items-center gap-3 shrink-0">
-                    <button class="px-3 py-2 bg-white border border-gray-200 rounded flex items-center gap-2 text-sm text-gray-700 hover:bg-gray-50">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                        All contacts
-                    </button>
-                    <button class="px-3 py-2 bg-white border border-gray-200 rounded flex items-center gap-2 text-sm text-gray-700 hover:bg-gray-50">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12"></path></svg>
+                <div class="flex items-center gap-3 shrink-0 relative">
+                    <div class="relative">
+                        <button type="button" id="all-contacts-dropdown-btn" class="px-3 py-2 bg-white border border-gray-200 rounded flex items-center gap-2 text-sm text-gray-700 hover:bg-gray-50">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                            @if(request('filter') === 'work') Work
+                            @elseif(request('filter') === 'personal') Personal
+                            @else All contacts
+                            @endif
+                        </button>
+                        <div id="all-contacts-menu" class="absolute left-0 top-full mt-2 w-48 bg-white border border-gray-200 rounded shadow-lg hidden z-50 py-1 text-left">
+                            <a href="{{ route('cards.index') }}" class="flex items-center justify-between px-4 py-2 text-sm {{ !request('filter') ? 'text-emerald-700 font-semibold bg-emerald-50/50' : 'text-gray-700 hover:bg-gray-50' }}">
+                                All Contacts
+                                @if(!request('filter')) <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> @endif
+                            </a>
+                            <a href="{{ route('cards.index', ['filter' => 'work']) }}" class="flex items-center justify-between px-4 py-2 text-sm {{ request('filter') === 'work' ? 'text-emerald-700 font-semibold bg-emerald-50/50' : 'text-gray-700 hover:bg-gray-50' }}">
+                                Work
+                                @if(request('filter') === 'work') <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> @endif
+                            </a>
+                            <a href="{{ route('cards.index', ['filter' => 'personal']) }}" class="flex items-center justify-between px-4 py-2 text-sm {{ request('filter') === 'personal' ? 'text-emerald-700 font-semibold bg-emerald-50/50' : 'text-gray-700 hover:bg-gray-50' }}">
+                                Personal
+                                @if(request('filter') === 'personal') <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> @endif
+                            </a>
+                        </div>
+                    </div>
+                    <a href="{{ route('cards.index', array_merge(request()->all(), ['sort' => request('sort') === 'recent' ? null : 'recent'])) }}" id="recently-added" class="px-3 py-2 bg-white border border-gray-200 rounded flex items-center gap-2 text-sm {{ request('sort') === 'recent' ? 'text-emerald-700 font-semibold border-emerald-500 bg-emerald-50/50' : 'text-gray-700 hover:bg-gray-50' }} transition-colors">
+                        <svg class="w-4 h-4 {{ request('sort') === 'recent' ? 'text-emerald-600' : 'text-gray-500' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12"></path></svg>
                         Recently added
-                    </button>
+                        @if(request('sort') === 'recent') <svg class="w-4 h-4 text-emerald-600 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> @endif
+                    </a>
                     <div class="flex bg-white border border-gray-200 rounded overflow-hidden">
                         <button class="p-2 bg-gray-900 text-white"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg></button>
                         <button class="p-2 text-gray-400 hover:text-gray-700"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg></button>
@@ -471,12 +490,21 @@
             .catch(err => console.error('Search error:', err));
     }
     
-    // Hide suggestions when clicking outside
-    document.addEventListener('click', function(e) {
-        if (e.target !== searchInput) {
-            // No suggestions dropdown needed for live filter
-        }
-    });
+    // All Contacts dropdown
+    const allContactsBtn = document.getElementById('all-contacts-dropdown-btn');
+    const allContactsMenu = document.getElementById('all-contacts-menu');
+    if (allContactsBtn && allContactsMenu) {
+        allContactsBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            allContactsMenu.classList.toggle('hidden');
+        });
+        
+        document.addEventListener('click', function(e) {
+            if (!allContactsBtn.contains(e.target) && !allContactsMenu.contains(e.target)) {
+                allContactsMenu.classList.add('hidden');
+            }
+        });
+    }
 
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
