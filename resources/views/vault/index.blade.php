@@ -10,16 +10,9 @@
         <div class="flex items-center gap-2 font-medium text-lg tracking-tight">
             kartu nama <span class="text-xs font-bold text-gray-500 tracking-widest mt-1">VAULT <span class="text-emerald-700">■</span></span>
         </div>
-        <div class="hidden md:flex items-center w-full max-w-md bg-gray-50 border border-gray-200 rounded-md px-3 py-2 text-sm text-gray-400 group focus-within:bg-white focus-within:ring-1 focus-within:ring-emerald-500 focus-within:border-emerald-500 transition-all relative">
-            <svg class="w-4 h-4 mr-2 text-gray-400 group-focus-within:text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-            <input type="text" id="search-input" value="{{ request('q') }}" placeholder="Search contacts by name or company" class="bg-transparent w-full outline-none text-gray-700 placeholder-gray-400" autocomplete="off">
-            @if(request()->has('q'))
-                <button type="button" onclick="clearSearch()" class="text-gray-400 hover:text-gray-600 ml-2">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                </button>
-            @endif
-            <span class="flex items-center gap-1 border border-gray-200 rounded px-1.5 py-0.5 text-[10px] text-gray-400 font-mono ml-2"><kbd>⌘</kbd> K</span>
-        </div>
+        
+        {{-- Search bar sebelumnya ada di sini, sekarang dipindah ke bawah --}}
+
         <div class="flex items-center gap-4 text-sm font-medium text-gray-600">
             <div class="flex items-center gap-1">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
@@ -53,7 +46,7 @@
     {{-- Main Container --}}
     <main class="max-w-7xl mx-auto px-8 pb-20 space-y-12">
         
-        {{-- Default Upload Zone (Hides when previewing or manual mode) --}}
+        {{-- Default Upload Zone --}}
         @if(!isset($previewData))
         <div id="default-upload-zone" class="bg-[#12221b] text-white rounded-lg p-10 flex flex-col md:flex-row items-center justify-between shadow-lg relative overflow-hidden">
             <div class="flex items-center gap-6 relative z-10">
@@ -111,7 +104,7 @@
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-12">
-                {{-- Left Side: Image Preview (Hidden on Manual Mode) --}}
+                {{-- Left Side: Image Preview --}}
                 <div id="image-side" class="lg:col-span-4 p-8 border-b lg:border-b-0 lg:border-r border-gray-200 bg-gray-50 flex flex-col">
                     <div class="flex items-center justify-between text-[10px] font-mono text-gray-500 uppercase tracking-widest mb-6">
                         <span>Original Card</span>
@@ -128,7 +121,7 @@
                                 <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
                                 <div class="truncate">
                                     <p id="card-filename" class="font-medium text-gray-900 truncate">{{ $previewData['original_filename'] ?? 'manual_entry' }}</p>
-                                    <p id="card-filesize" class="text-xs text-gray-500">{{ $previewData['filesize'] ?? '0 MB' }} • Uploaded just now</p>
+                                    <p id="card-filesize" class="text-xs text-gray-500">{{ $previewData['filesize'] ?? '0 MB' }} Uploaded just now</p>
                                 </div>
                             </div>
                             <svg class="w-4 h-4 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
@@ -226,13 +219,28 @@
 
         {{-- Contact Database Section --}}
         <div class="pt-8">
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-                <div class="flex items-center gap-3">
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
+                <div class="flex items-center gap-3 shrink-0">
                     <h2 class="text-3xl font-normal text-gray-900">Your connections</h2>
                     <span class="px-2 py-0.5 bg-gray-100 border border-gray-200 rounded text-xs text-gray-600">{{ $cards->total() }}</span>
                 </div>
-                <div class="flex items-center gap-3">
-                    <p class="text-sm text-gray-500 mr-auto sm:hidden">A little less searching. A lot more connecting.</p>
+
+                {{-- SEARCH BAR (Dipindahkan ke area sini) --}}
+                <div class="flex-1 w-full max-w-xl mx-0 lg:mx-6">
+                    <div class="flex items-center bg-white border border-gray-300 rounded-md px-3 py-2.5 text-sm text-gray-400 group focus-within:ring-1 focus-within:ring-emerald-500 focus-within:border-emerald-500 transition-all shadow-sm relative">
+                        <svg class="w-5 h-5 mr-2 text-gray-400 group-focus-within:text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                        <input type="text" id="search-input" value="{{ request('q') }}" placeholder="Search contacts by name or company..." class="bg-transparent w-full outline-none text-gray-700 placeholder-gray-400" autocomplete="off">
+                        @if(request()->has('q'))
+                            <button type="button" onclick="clearSearch()" class="text-gray-400 hover:text-gray-600 ml-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                            </button>
+                        @endif
+                        <span class="flex items-center gap-1 border border-gray-200 rounded px-1.5 py-0.5 text-[10px] text-gray-400 font-mono ml-2"><kbd>⌘</kbd> K</span>
+                    </div>
+                </div>
+                {{-- END SEARCH BAR --}}
+
+                <div class="flex items-center gap-3 shrink-0">
                     <button class="px-3 py-2 bg-white border border-gray-200 rounded flex items-center gap-2 text-sm text-gray-700 hover:bg-gray-50">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                         All contacts
@@ -247,12 +255,13 @@
                     </div>
                 </div>
             </div>
+            
             <p class="text-sm text-gray-500 hidden sm:block mb-8">A little less searching. A lot more connecting.</p>
 
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 @forelse($cards as $index => $card)
                     <div class="bg-white border border-gray-200 rounded-lg overflow-hidden flex flex-col group cursor-pointer hover:border-emerald-600 transition-all shadow-sm hover:shadow-md" onclick="openCardModal({{ json_encode($card) }})">
-                        {{-- Card Header Styling (Simulated variation based on index) --}}
+                        {{-- Card Header Styling --}}
                         <div class="h-40 p-6 flex flex-col justify-end text-white relative {{ ['bg-[#12221b]', 'bg-[#1b2533]', 'bg-[#f0ece1] text-gray-900', 'bg-[#000000]', 'bg-[#e3dcd1] text-gray-900', 'bg-[#f4f7f6] text-gray-900'][$index % 6] }}">
                             @if($card->file_path)
                                 <img src="{{ asset('storage/' . $card->file_path) }}" class="absolute inset-0 w-full h-full object-cover opacity-30 mix-blend-overlay">
