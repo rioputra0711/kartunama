@@ -26,7 +26,13 @@ class BusinessCardController extends Controller
         if ($sort = $request->input('sort')) {
             if ($sort === 'recent') {
                 $query->latest();
+            } elseif ($sort === 'oldest') {
+                $query->oldest();
+            } else {
+                $query->latest();
             }
+        } else {
+            $query->latest();
         }
 
         if ($search = $request->input('q')) {
@@ -42,7 +48,7 @@ class BusinessCardController extends Controller
                   ->orWhere('linkedin', 'like', "%$search%");
             });
         }
-        $cards = $query->latest()->paginate(6)->withQueryString();
+        $cards = $query->paginate(6)->withQueryString();
         return view('vault.index', compact('cards'));
     }
 
@@ -81,6 +87,12 @@ class BusinessCardController extends Controller
     public function recentlyAdded(Request $request)
     {
         $cards = BusinessCard::latest()->take(10)->get();
+        return view('vault.index', compact('cards'));
+    }
+
+    public function oldestAdded(Request $request)
+    {
+        $cards = BusinessCard::oldest()->take(10)->get();
         return view('vault.index', compact('cards'));
     }
 
