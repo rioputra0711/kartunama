@@ -217,6 +217,25 @@ class BusinessCardController extends Controller
         return redirect()->route('cards.index')->with('success', 'Kontak berhasil disimpan ke Vault!');
     }
 
+    public function update(Request $request, BusinessCard $card)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'company' => 'nullable|string|max:255',
+            'title' => 'nullable|string|max:255',
+            'phone' => 'nullable|string|max:255',
+            'office_phone' => 'nullable|string|max:255',
+            'email' => 'nullable|string|max:255',
+            'website' => 'nullable|string|max:255',
+            'address' => 'nullable|string|max:500',
+            'linkedin' => 'nullable|string|max:255',
+        ]);
+
+        $card->update($request->all());
+
+        return redirect()->route('cards.index')->with('success', 'Kontak berhasil diperbarui!');
+    }
+
     public function destroy(BusinessCard $card)
     {
         if ($card->file_path && Storage::disk('public')->exists($card->file_path)) {

@@ -11,5 +11,6 @@ Route::get('/oldest-added', [BusinessCardController::class, 'oldestAdded'])->nam
 Route::get('/search', [BusinessCardController::class, 'search'])->name('cards.search');
 Route::post('/cards/preview', [BusinessCardController::class, 'preview'])->name('cards.preview');
 Route::post('/cards', [BusinessCardController::class, 'store'])->name('cards.store');
+Route::put('/cards/{card}', [BusinessCardController::class, 'update'])->name('cards.update');
 Route::delete('/cards/{card}', [BusinessCardController::class, 'destroy'])->name('cards.destroy');
 

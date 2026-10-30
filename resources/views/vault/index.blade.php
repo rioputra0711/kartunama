@@ -6,7 +6,7 @@
 <div class="min-h-screen bg-[#fafaf9] text-gray-900 font-sans">
     
     {{-- Navbar Section --}}
-    <nav class="flex items-center justify-between px-8 py-4 border-b border-gray-200 bg-white">
+    <nav class="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl flex items-center justify-between px-8 py-4 border-b border-gray-200 bg-white/90 backdrop-blur-md shadow-sm z-50">
         <div class="flex items-center gap-2 font-medium text-lg tracking-tight">
             kartu nama <span class="text-xs font-bold text-gray-500 tracking-widest mt-1">VAULT <span class="text-emerald-700">■</span></span>
         </div>
@@ -284,48 +284,75 @@
                         </div>
                     </div>
                     <div class="flex bg-white border border-gray-200 rounded overflow-hidden">
-                        <button class="p-2 bg-gray-900 text-white"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg></button>
-                        <button class="p-2 text-gray-400 hover:text-gray-700"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg></button>
+                        <button type="button" id="grid-view-btn" onclick="switchView('grid')" class="p-2 bg-gray-900 text-white transition-colors" title="Grid View"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg></button>
+                        <button type="button" id="list-view-btn" onclick="switchView('list')" class="p-2 text-gray-400 hover:text-gray-700 transition-colors" title="List View"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg></button>
                     </div>
                 </div>
             </div>
             
             <p class="text-sm text-gray-500 hidden sm:block mb-8">A little less searching. A lot more connecting.</p>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div id="cards-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 @forelse($cards as $index => $card)
-                    <div class="bg-white border border-gray-200 rounded-lg overflow-hidden flex flex-col group cursor-pointer hover:border-emerald-600 transition-all shadow-sm hover:shadow-md" onclick="openCardModal({{ json_encode($card) }})">
-                        {{-- Card Header Styling --}}
-                        <div class="h-40 p-6 flex flex-col justify-end text-white relative {{ ['bg-[#12221b]', 'bg-[#1b2533]', 'bg-[#f0ece1] text-gray-900', 'bg-[#000000]', 'bg-[#e3dcd1] text-gray-900', 'bg-[#f4f7f6] text-gray-900'][$index % 6] }}">
-                            @if($card->file_path)
-                                <img src="{{ asset('storage/' . $card->file_path) }}" class="absolute inset-0 w-full h-full object-cover opacity-30 mix-blend-overlay">
-                            @endif
-                            <div class="relative z-10">
-                                <h3 class="font-medium text-lg leading-tight">{{ $card->company }}</h3>
-                                <p class="text-xs opacity-70 mt-1">{{ $card->email }}</p>
+                    <div class="bg-[#f5f7f4] border border-emerald-800/10 rounded-2xl p-5 flex flex-col gap-4 cursor-pointer hover:border-emerald-700/40 shadow-sm" onclick="openCardModal({{ json_encode($card) }})">
+                        {{-- Top Card Graphic Mockup matching uploaded business card --}}
+                        <div class="bg-[#12221b] rounded-xl p-5 text-white relative overflow-hidden flex flex-col justify-between shadow-inner h-44 border border-white/5">
+                            {{-- Decorative Background Arcs --}}
+                            <div class="absolute -right-8 -top-8 w-32 h-32 border border-white/10 rounded-full pointer-events-none"></div>
+                            <div class="absolute -right-4 -top-4 w-24 h-24 border border-white/10 rounded-full pointer-events-none"></div>
+                            
+                            <div class="relative z-10 flex justify-between items-start">
+                                <h3 class="font-bold text-2xl tracking-tight text-white/90">{{ $card->company ?: 'Company' }}</h3>
+                            </div>
+
+                            <div class="relative z-10 space-y-1">
+                                <div class="text-sm font-semibold tracking-wide text-white">{{ $card->name }}</div>
+                                <div class="text-[11px] text-white/70">{{ $card->title ?? 'Professional' }}</div>
+                                <div class="w-full h-[1px] bg-white/15 my-2"></div>
+                                <div class="flex items-end justify-between text-[11px] text-white/80">
+                                    <div class="space-y-0.5">
+                                        <div>{{ $card->email }}</div>
+                                        <div>{{ $card->phone }}</div>
+                                    </div>
+                                    <div class="font-mono text-[10px] text-white/60">{{ $card->website ?? strtolower(str_replace(' ', '', $card->company)) . '.example' }}</div>
+                                </div>
                             </div>
                         </div>
                         
-                        {{-- Card Body --}}
-                        <div class="p-5 flex-1 flex flex-col bg-white">
-                            <div class="flex items-start justify-between mb-1">
-                                <h4 class="text-lg font-medium text-gray-900">{{ $card->name }}</h4>
-                                <span class="px-2 py-0.5 bg-gray-100 text-gray-500 text-[10px] rounded uppercase tracking-wider">Saved</span>
+                        {{-- Details & Action Section --}}
+                        <div class="flex flex-col gap-3">
+                            <div class="flex items-start justify-between">
+                                <div>
+                                    <h4 class="text-xl font-bold text-gray-900 tracking-tight">{{ $card->name }}</h4>
+                                    <p class="text-sm font-medium text-gray-700 mt-0.5">{{ $card->company }}</p>
+                                    <p class="text-xs text-gray-500">{{ $card->title ?? 'Professional' }}</p>
+                                </div>
+                                <span class="px-2.5 py-1 bg-emerald-100/70 text-emerald-800 text-[10px] font-bold rounded-md tracking-wider uppercase">SAVED</span>
                             </div>
-                            <p class="text-sm text-gray-500">{{ $card->title ?? 'Professional' }}</p>
-                            <p class="text-sm text-gray-500 mt-0.5">{{ $card->company }}</p>
+
+                            {{-- Email Input Box --}}
+                            <div class="bg-white border border-gray-200 rounded-xl px-3.5 py-2.5 flex items-center gap-3 text-sm text-gray-800 shadow-sm">
+                                <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                                <span class="truncate">{{ $card->email ?: 'No email specified' }}</span>
+                            </div>
+
+                            {{-- Phone Input Box --}}
+                            <div class="bg-white border border-gray-200 rounded-xl px-3.5 py-2.5 flex items-center gap-3 text-sm text-gray-800 shadow-sm">
+                                <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
+                                <span class="truncate">{{ $card->phone ?: 'No phone specified' }}</span>
+                            </div>
                             
-                            <div class="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between text-sm" onclick="event.stopPropagation()">
-                                <button class="flex items-center gap-2 text-[#007b55] hover:text-[#00553b] font-medium transition-colors" onclick="navigator.clipboard.writeText('{{ $card->email }}'); alert('Email dicopy!')">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                            {{-- Bottom Action Row --}}
+                            <div class="pt-2 flex items-center justify-between" onclick="event.stopPropagation()">
+                                <button class="px-4 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 rounded-xl text-xs font-semibold flex items-center gap-2" onclick="navigator.clipboard.writeText('{{ $card->email }}'); alert('Email dicopy!')">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
                                     Copy Email
                                 </button>
-                                <span class="text-gray-400 text-xs truncate max-w-[120px]">{{ $card->website ?? strtolower(str_replace(' ', '', $card->company)) . '.example' }}</span>
+                                
                                 <form action="{{ route('cards.destroy', $card->id) }}" method="POST" onsubmit="return confirm('Delete connection?')" onclick="event.stopPropagation()">
                                     @csrf @method('DELETE')
-                                    <button type="submit" class="flex items-center gap-1.5 text-gray-500 hover:text-gray-900">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
-                                        Edit
+                                    <button type="submit" class="p-2.5 bg-white border border-gray-200 hover:bg-red-50 hover:border-red-200 text-gray-400 hover:text-red-600 rounded-xl shadow-sm" title="Delete contact">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                                     </button>
                                 </form>
                             </div>
@@ -411,46 +438,97 @@
         }
     }
 
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeCardModal();
+        }
+    });
+
+    function enableModalEdit() {
+        const inputs = document.querySelectorAll('#modal-edit-form input');
+        inputs.forEach(input => {
+            input.removeAttribute('readonly');
+            input.classList.remove('cursor-default');
+            input.classList.add('cursor-text', 'border-emerald-600', 'bg-white/50');
+        });
+        const editBtn = document.getElementById('modal-edit-btn');
+        if (editBtn) editBtn.classList.add('hidden');
+        const actions = document.getElementById('modal-actions');
+        if (actions) actions.classList.remove('hidden');
+    }
+
+    function disableModalEdit() {
+        const inputs = document.querySelectorAll('#modal-edit-form input');
+        inputs.forEach(input => {
+            input.setAttribute('readonly', true);
+            input.classList.add('cursor-default');
+            input.classList.remove('cursor-text', 'border-emerald-600', 'bg-white/50');
+        });
+        const editBtn = document.getElementById('modal-edit-btn');
+        if (editBtn) editBtn.classList.remove('hidden');
+        const actions = document.getElementById('modal-actions');
+        if (actions) actions.classList.add('hidden');
+    }
+
     function openCardModal(card) {
         console.log('openCardModal called with:', card);
         const modal = document.getElementById('card-modal');
-        console.log('card-modal element:', modal);
-        if (!modal) { console.error('card-modal not found in DOM'); return; }
-        const modalCompany = document.getElementById('modal-company');
-        console.log('modal-company element:', modalCompany);
-        if (!modalCompany) { console.error('modal-company not found in DOM'); return; }
-        modalCompany.innerText = card.company || 'N/A';
-        const modalName = document.getElementById('modal-name');
-        if (!modalName) { console.error('modal-name not found in DOM'); return; }
-        modalName.innerText = card.name || 'N/A';
-        document.getElementById('modal-title').innerText = card.title || 'N/A';
-        document.getElementById('modal-email').innerText = card.email || 'N/A';
-        document.getElementById('modal-phone').innerText = card.phone || 'N/A';
-        document.getElementById('modal-office-phone').innerText = card.office_phone || '-';
-        document.getElementById('modal-website').innerText = card.website || '-';
-        document.getElementById('modal-address').innerText = card.address || '-';
-        document.getElementById('modal-linkedin').innerText = card.linkedin || '-';
+        if (!modal) { console.error('card-modal not found'); return; }
         
-        let dateStr = card.created_at ? new Date(card.created_at).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' }) : '-';
-        document.getElementById('modal-date').innerText = 'Saved on: ' + dateStr;
+        const modalCompany = document.getElementById('modal-company');
+        if (modalCompany) modalCompany.innerText = card.company || 'N/A';
+        
+        const editForm = document.getElementById('modal-edit-form');
+        if (editForm) {
+            editForm.action = "/cards/" + card.id;
+        }
+
+        const setVal = (id, val) => {
+            const el = document.getElementById(id);
+            if (el) el.value = val || '';
+        };
+
+        setVal('modal-input-name', card.name);
+        setVal('modal-input-title', card.title);
+        setVal('modal-input-email', card.email);
+        setVal('modal-input-phone', card.phone);
+        setVal('modal-input-office-phone', card.office_phone);
+        setVal('modal-input-website', card.website);
+        setVal('modal-input-address', card.address);
+        setVal('modal-input-linkedin', card.linkedin);
+        
+        disableModalEdit();
+
+        const dateEl = document.getElementById('modal-date');
+        if (dateEl) {
+            let dateStr = card.created_at ? new Date(card.created_at).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' }) : '-';
+            dateEl.innerText = 'Saved on: ' + dateStr;
+        }
 
         const imgEl = document.getElementById('modal-card-image');
         const noImgEl = document.getElementById('modal-no-image');
-        if (card.file_path) {
-            imgEl.src = "{{ asset('storage') }}/" + card.file_path;
-            imgEl.classList.remove('hidden');
-            noImgEl.classList.add('hidden');
-        } else {
-            imgEl.classList.add('hidden');
-            noImgEl.classList.remove('hidden');
+        if (imgEl && noImgEl) {
+            if (card.file_path) {
+                imgEl.src = "{{ asset('storage') }}/" + card.file_path;
+                imgEl.classList.remove('hidden');
+                noImgEl.classList.add('hidden');
+            } else {
+                imgEl.classList.add('hidden');
+                noImgEl.classList.remove('hidden');
+            }
         }
 
+        modal.classList.remove('hidden'); // Ensure modal is visible
         modal.style.display = 'flex';
     }
 
     function closeCardModal() {
         const modal = document.getElementById('card-modal');
-        modal.style.display = 'none';
+        if (modal) {
+            modal.classList.add('hidden'); // Ensure modal is hidden
+            modal.style.display = 'none';
+        }
+        disableModalEdit();
     }
 
     function clearSearch() {
@@ -537,11 +615,23 @@
         });
     }
 
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') {
-            closeCardModal();
+    function switchView(mode) {
+        const gridBtn = document.getElementById('grid-view-btn');
+        const listBtn = document.getElementById('list-view-btn');
+        const cardsContainer = document.getElementById('cards-container');
+        if (!cardsContainer) { console.error('cards-container not found'); return; }
+        
+        if (mode === 'grid') {
+            gridBtn.className = "p-2 bg-gray-900 text-white transition-colors";
+            listBtn.className = "p-2 text-gray-400 hover:text-gray-700 transition-colors";
+            cardsContainer.className = "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6";
+        } else {
+            listBtn.className = "p-2 bg-gray-900 text-white transition-colors";
+            gridBtn.className = "p-2 text-gray-400 hover:text-gray-700 transition-colors";
+            cardsContainer.className = "flex flex-col gap-4"; // Changed to flex column for list view
         }
-    });
+    }
+
 </script>
 @endpush
 @endsection

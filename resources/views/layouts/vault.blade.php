@@ -82,66 +82,80 @@
     </main>
 
     {{-- Card Detail Modal --}}
-    {{-- Card Detail Modal --}}<div id="card-modal" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 9999; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px);" class="flex items-center justify-center hidden" onclick="closeCardModal()">
-        <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full mx-4 overflow-hidden border border-gray-200" onclick="event.stopPropagation()">
+    {{-- Card Detail Modal --}}<div id="card-modal" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 9999; background: rgba(0,0,0,0.5);" class="flex items-center justify-center hidden" onclick="closeCardModal()">
+        <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full mx-4 overflow-y-auto border border-gray-200" onclick="event.stopPropagation()">
             <div class="flex items-center justify-between px-6 py-4 bg-gray-50 border-b border-gray-200">
                 <div class="flex items-center gap-2">
                     <span class="w-3 h-3 rounded-full bg-emerald-600"></span>
                     <h3 id="modal-company" class="font-semibold text-gray-900 text-lg">Company Name</h3>
                 </div>
-                <button onclick="closeCardModal()" class="text-gray-400 hover:text-gray-600 p-1 rounded-lg">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                </button>
-            </div>
-            <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div id="modal-image-container" class="flex flex-col items-center justify-center bg-gray-50 rounded-lg p-4 border border-gray-100 min-h-[220px]">
-                    <img id="modal-card-image" src="" alt="Business Card" class="max-h-64 object-contain rounded shadow">
-                    <span id="modal-no-image" class="text-xs text-gray-400 italic hidden">No card image attached</span>
-                </div>
-                <div class="space-y-3 text-sm">
-                    <div>
-                        <span class="text-[10px] font-mono text-gray-400 uppercase tracking-wider">Name</span>
-                        <p id="modal-name" class="font-medium text-gray-900 text-base">-</p>
-                    </div>
-                    <div>
-                        <span class="text-[10px] font-mono text-gray-400 uppercase tracking-wider">Title</span>
-                        <p id="modal-title" class="text-gray-700">-</p>
-                    </div>
-                    <div>
-                        <span class="text-[10px] font-mono text-gray-400 uppercase tracking-wider">Email</span>
-                        <p id="modal-email" class="text-emerald-700 font-medium">-</p>
-                    </div>
-                    <div class="grid grid-cols-2 gap-2">
-                        <div>
-                            <span class="text-[10px] font-mono text-gray-400 uppercase tracking-wider">Phone</span>
-                            <p id="modal-phone" class="text-gray-700">-</p>
-                        </div>
-                        <div>
-                            <span class="text-[10px] font-mono text-gray-400 uppercase tracking-wider">Office Phone</span>
-                            <p id="modal-office-phone" class="text-gray-700">-</p>
-                        </div>
-                    </div>
-                    <div>
-                        <span class="text-[10px] font-mono text-gray-400 uppercase tracking-wider">Website</span>
-                        <p id="modal-website" class="text-emerald-600 truncate">-</p>
-                    </div>
-                    <div>
-                        <span class="text-[10px] font-mono text-gray-400 uppercase tracking-wider">Address</span>
-                        <p id="modal-address" class="text-gray-700 text-xs">-</p>
-                    </div>
-                    <div>
-                        <span class="text-[10px] font-mono text-gray-400 uppercase tracking-wider">LinkedIn</span>
-                        <p id="modal-linkedin" class="text-emerald-600 truncate">-</p>
-                    </div>
-                    <div class="pt-2 border-t border-gray-100 flex items-center justify-between text-xs text-gray-400">
-                        <span id="modal-date">-</span>
-                        <a id="modal-download" href="#" target="_blank" class="inline-flex items-center gap-1 text-emerald-600 hover:text-emerald-700 font-medium">
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                            View Original
-                        </a>
-                    </div>
+                <div class="flex items-center gap-3">
+                    <button type="button" id="modal-edit-btn" onclick="enableModalEdit()" class="px-3 py-1.5 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-lg text-xs font-medium flex items-center gap-1.5 shadow-sm transition-colors">
+                        <svg class="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                        Edit Details
+                    </button>
+                    <button onclick="closeCardModal()" class="text-gray-400 hover:text-gray-600 p-1.5 rounded-lg hover:bg-gray-200/50 transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
                 </div>
             </div>
+        <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div id="modal-image-container" class="flex flex-col items-center justify-center bg-gray-50 rounded-lg p-4 border border-gray-100 min-h-[220px]">
+                <img id="modal-card-image" src="" alt="Business Card" class="max-h-64 object-contain rounded shadow">
+                <span id="modal-no-image" class="text-xs text-gray-400 italic hidden">No card image attached</span>
+            </div>
+            <form id="modal-edit-form" action="" method="POST" class="space-y-3 text-sm">
+                @csrf
+                @method('PUT')
+                <div>
+                    <span class="text-[10px] font-mono text-gray-400 uppercase tracking-wider">Name</span>
+                    <input type="text" name="name" id="modal-input-name" readonly class="w-full bg-transparent border-b border-gray-200 focus:border-emerald-600 outline-none font-medium text-gray-900 text-base py-0.5 cursor-default focus:cursor-text">
+                </div>
+                <div>
+                    <span class="text-[10px] font-mono text-gray-400 uppercase tracking-wider">Title</span>
+                    <input type="text" name="title" id="modal-input-title" readonly class="w-full bg-transparent border-b border-gray-200 focus:border-emerald-600 outline-none text-gray-700 py-0.5 cursor-default focus:cursor-text">
+                </div>
+                <div>
+                    <span class="text-[10px] font-mono text-gray-400 uppercase tracking-wider">Email</span>
+                    <input type="email" name="email" id="modal-input-email" readonly class="w-full bg-transparent border-b border-gray-200 focus:border-emerald-600 outline-none text-emerald-700 font-medium py-0.5 cursor-default focus:cursor-text">
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <span class="text-[10px] font-mono text-gray-400 uppercase tracking-wider">Phone</span>
+                        <input type="text" name="phone" id="modal-input-phone" readonly class="w-full bg-transparent border-b border-gray-200 focus:border-emerald-600 outline-none text-gray-700 py-0.5 cursor-default focus:cursor-text">
+                    </div>
+                    <div>
+                        <span class="text-[10px] font-mono text-gray-400 uppercase tracking-wider">Office Phone</span>
+                        <input type="text" name="office_phone" id="modal-input-office-phone" readonly class="w-full bg-transparent border-b border-gray-200 focus:border-emerald-600 outline-none text-gray-700 py-0.5 cursor-default focus:cursor-text">
+                    </div>
+                </div>
+                <div>
+                    <span class="text-[10px] font-mono text-gray-400 uppercase tracking-wider">Website</span>
+                    <input type="text" name="website" id="modal-input-website" readonly class="w-full bg-transparent border-b border-gray-200 focus:border-emerald-600 outline-none text-emerald-600 py-0.5 cursor-default focus:cursor-text">
+                </div>
+                <div>
+                    <span class="text-[10px] font-mono text-gray-400 uppercase tracking-wider">Address</span>
+                    <input type="text" name="address" id="modal-input-address" readonly class="w-full bg-transparent border-b border-gray-200 focus:border-emerald-600 outline-none text-gray-700 text-xs py-0.5 cursor-default focus:cursor-text">
+                </div>
+                <div>
+                    <span class="text-[10px] font-mono text-gray-400 uppercase tracking-wider">LinkedIn</span>
+                    <input type="text" name="linkedin" id="modal-input-linkedin" readonly class="w-full bg-transparent border-b border-gray-200 focus:border-emerald-600 outline-none text-emerald-600 py-0.5 cursor-default focus:cursor-text">
+                </div>
+                
+                <div class="pt-4 flex items-center justify-between">
+                    <div id="modal-actions" class="flex items-center gap-2 hidden">
+                        <button type="submit" id="modal-save-btn" class="px-4 py-2 bg-emerald-600 text-white rounded-lg text-xs font-semibold hover:bg-emerald-700 transition-colors shadow-sm flex items-center gap-1.5">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                            Save Changes
+                        </button>
+                        <button type="button" id="modal-cancel-btn" onclick="disableModalEdit()" class="px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-semibold transition-colors">
+                            Cancel
+                        </button>
+                    </div>
+                    <div id="modal-date" class="text-[10px] text-gray-400 uppercase tracking-wider">-</div>
+                </div>
+            </form>
+        </div>
         </div>
     </div>
 
